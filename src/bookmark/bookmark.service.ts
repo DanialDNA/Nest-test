@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Bookmark } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBookmarkDto, UpdateBookmarkDto } from './dto';
@@ -8,14 +8,19 @@ export class BookmarkService {
     constructor(private prisma: PrismaService) {}
 
     async getBookmarks(id: number) {
-        
+
         if (id !== null) {
             const bookmark: Bookmark = await this.prisma.bookmark.findUnique({
                 where : {
                     id: id
                 }
             })
-            return {'success': true, bookmark}
+            
+            if (bookmark !== null) {
+                return {'success': true, bookmark}
+            } else {
+                throw new HttpException('bookmark not found', HttpStatus.NOT_FOUND)
+            }
 
         } else {
             const bookmarks: Bookmark[] = await this.prisma.bookmark.findMany({}) 
