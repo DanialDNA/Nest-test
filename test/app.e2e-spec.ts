@@ -171,13 +171,37 @@ describe ("App e2e", () => {
             })
 
         describe('Edit bookmark by id', () => {
+            it('should throw error when bookmark does not exist', () => {
+                return pactum.spec().patch("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "id": 0,
+                    "fields": {"title": "test"} 
+                }).expectStatus(404)
+            })
 
+            it('should throw error when fields is empty', () => {
+                return pactum.spec().patch("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "id": "$S{bookmarkId}",
+                    "fields": {} 
+                }).expectStatus(400)
+            })
 
-            
+            it('should update bookmark', () => {
+                return pactum.spec().patch("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "id": "$S{bookmarkId}",
+                    "fields": {"title": "test"} 
+                }).expectStatus(200)
+            })
         })
 
-
         describe('Delete bookmark by id ', () => {
+            it("should throw error when bookmark does not exist", () => {
+                return pactum.spec().delete("/bookmarks/0").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(404)
+
+            })
+                        
+            it('should delete bookmark', () => {
+                return pactum.spec().delete("/bookmarks/$S{bookmarkId}").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
+            })
 
         })
 
