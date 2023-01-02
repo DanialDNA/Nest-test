@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateUserDto } from './dto';
 
 @Injectable()
 export class UserService {
@@ -16,5 +17,22 @@ export class UserService {
         } else {
             return {"success": false, "message": "user not found !"}
         }
+    }
+
+    async updateUser(body: UpdateUserDto) {
+        const queryData = {}
+        for (let i in body.fields) {
+            queryData[i] = body.fields[i]
+        }
+
+        console.log(queryData);
+        const updatedUser = await this.prisma.user.update({
+            where: {
+                id: body.id
+            }, 
+            data: queryData
+
+        })
+        return {'success': true, updatedUser}
     }
 }

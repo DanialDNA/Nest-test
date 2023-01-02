@@ -1,5 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { userDto } from './dto';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { UpdateUserDto} from './dto';
 import { UserService } from './user.service';
 
 
@@ -11,5 +11,12 @@ export class UserController {
     getUser(@Param('id') id: string) {
         // convert id from string to int  
         return this.userService.getUser(+id)
+    }
+
+    @Patch()
+    updateUser(@Body() body: UpdateUserDto) {
+        return this.userService.updateUser(body);
+        
+
     }
 }
