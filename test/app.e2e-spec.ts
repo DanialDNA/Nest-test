@@ -92,33 +92,88 @@ describe ("App e2e", () => {
     describe('User', () => {
         describe('Get user by id', () => {
             it('should get user by id', () => {
-                return pactum.spec().get("/user/$S{userId}").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
+                return pactum.spec().get("/users/$S{userId}").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
             })
         })
 
-        describe('Edit user', () => {
+        describe('Edit user', () => {            
+            it('should throw error when fields is empty', () => {
+                return pactum.spec().patch("/users").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "id": "$S{userId}",
+                    "fields": {}
+                }).expectStatus(400)
+            })
+            
+            
+            it("should throw error when id is not sent", () => {
+                return pactum.spec().patch("/users").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "fields": {"firstName": "test"}
+                }).expectStatus(400)
 
+            })
+        
+            it("should edit user", () => {
+                return pactum.spec().patch("/users").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "id": "$S{userId}",
+                    "fields": {"title": "test"}
+                }).expectStatus(200)
+            })
+        
         })
 
     })
 
     describe('Bookmark', () => {
-        describe('Get empty bookmarks', () => {})
+        describe('Get empty bookmarks', () => {
+            it("should get empty bookmark", () => {
+                return pactum.spec().get("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
+                .expectBody({"success": true, "bookmarks": []})
+            })
+        })
         
         
         describe('Create bookmark', () => {
+            it("should throw error when title is not sent", () => {
+                return pactum.spec().post("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "link": "testy link"
+                }).expectStatus(400)
+            })
+
+            it("should throw error when link is not sent", () => {
+                return pactum.spec().post("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "title": "testy title"
+                }).expectStatus(400)
+            })
+
+            it("should create bookmark", () => {
+                return pactum.spec().post("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).withBody({
+                    "title": "testy title",
+                    "link": "testy link"
+                }).expectStatus(201).stores('bookmarkId', 'newBookmark.id')
+            })
+        })
+
+        describe('Get bookmarks', () => {
+            it("should get bookmark list", () => {
+                return pactum.spec().get("/bookmarks").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
+                .expectJsonLength("bookmarks", 1)
+            })
 
         })
 
-        describe('Get bookmarks', () => {})
-
-
-
         describe('Get bookmarks by id', () => {})
-
+            it('should throw error when bookmark does not exist', () => {
+                return pactum.spec().get("/bookmarks/0").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(404)
+            })
+        
+            it("should get specific bookmark", () => {
+                return pactum.spec().get("/bookmarks/$S{bookmarkId}").withHeaders({Authorization: "bearer $S{userAt}"}).expectStatus(200)
+            })
 
         describe('Edit bookmark by id', () => {
 
+
+            
         })
 
 
