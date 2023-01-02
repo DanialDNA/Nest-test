@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Bookmark } from '@prisma/client';
+import { retry } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBookmarkDto, UpdateBookmarkDto } from './dto';
 
@@ -62,25 +63,39 @@ export class BookmarkService {
         }
     
         try {
-            const bookmark = await this.prisma.bookmark.update({
+            const updatedbBookmark = await this.prisma.bookmark.update({
                 where: {
                     id: body.id
                 },
                 data: queryData
             })
-            
-            return {"success": true, "bookmark": bookmark}
+            return {"success": true, updatedbBookmark}
 
         } catch (error) {
-            console.log(error);
-            return {"success": false, "message": error}
-            
-        }
+            console.log(error.code);
+            if (error.code == "P2025") {
+                throw new HttpException('bookmark not found', HttpStatus.NOT_FOUND)
+            } else {
+                return {"success": false, "message": error}
 
-        
-    
-    
+            }   
+        }
     }
 
+    async deleteBookmark(id: number) {
+        try {
+            const bookmark = await this.prisma.bookmark.delete({
+                where: {
+                    id: id
+                }
+            })
+            return {"success": true, bookmark}
 
+        } catch (error) {
+            if (error.code === "P2025") {
+                throw new HttpException('bookmark not found', HttpStatus.NOT_FOUND) 
+            }
+            return {"success": false, message: error}
+        }
+    }
 }
